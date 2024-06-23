@@ -23,28 +23,28 @@ import Stage from "./components/Stage";
 
 const App = () => {
   const {
-    click: [click, setClick],
+    click: [, setClick],
     clicks: [clicks, setClicks],
     image: [image, setImage],
     prevImage: [prevImage, setPrevImage],
     svg: [, setSVG],
-    svgs: [svgs, setSVGs],
+    svgs: [, setSVGs],
     allsvg: [, setAllsvg],
     isErased: [, setIsErased],
     isModelLoaded: [, setIsModelLoaded],
     isLoading: [, setIsLoading],
     segmentTypes: [, setSegmentTypes],
     maskImg: [, setMaskImg],
-    isErasing: [isErasing, setIsErasing],
-    stickerTabBool: [stickerTabBool, setStickerTabBool],
+    isErasing: [, setIsErasing],
+    stickerTabBool: [stickerTabBool],
     isMultiMaskMode: [isMultiMaskMode, setIsMultiMaskMode],
-    isHovering: [isHovering, setIsHovering],
-    showLoadingModal: [showLoadingModal, setShowLoadingModal],
-    eraserText: [eraserText, setEraserText],
+    isHovering: [, setIsHovering],
+    showLoadingModal: [, setShowLoadingModal],
+    eraserText: [, setEraserText],
     predMask: [predMask, setPredMask],
     predMasks: [predMasks, setPredMasks],
-    predMasksHistory: [predMasksHistory, setPredMasksHistory],
-    isToolBarUpload: [isToolBarUpload, setIsToolBarUpload],
+    predMasksHistory: [predMasksHistory],
+    isToolBarUpload: [, setIsToolBarUpload],
   } = useContext(AppContext)!;
   const [model, setModel] = useState<InferenceSession | null>(null);
   const [multiMaskModel, setMultiMaskModel] = useState<InferenceSession | null>(
@@ -110,7 +110,6 @@ const App = () => {
         last_pred_mask: null, // Only 1 click allowed, so no last predicted mask exists
       });
       if (feeds === undefined) return;
-      // console.log("Running multiMaskModel");
       const results = await multiMaskModel.run(feeds);
 
       const output = results["output"];
@@ -185,7 +184,6 @@ const App = () => {
       setIsModelLoaded((prev) => {
         return { ...prev, boxModel: true };
       });
-      // console.log("multiMaskModel is loaded");
     } catch (e) {
       // console.log(e);
     }
@@ -206,7 +204,6 @@ const App = () => {
   };
 
   const runModel = async () => {
-    // console.log("Running singleMaskModel");
     try {
       if (
         model === null ||
@@ -223,13 +220,9 @@ const App = () => {
         last_pred_mask: predMask,
       });
       if (feeds === undefined) return;
-      // const beforeONNX = Date.now();
       const results = await model.run(feeds);
-      // const afterONNX = Date.now();
-      // console.log(`ONNX took ${afterONNX - beforeONNX}ms`);
       const output = results[model.outputNames[0]];
       if (hasClicked) {
-        // const beforeSVG = Date.now();
         const pred_mask = results[model.outputNames[1]];
         setPredMask(pred_mask);
         if (!predMasksHistory) {
@@ -242,20 +235,14 @@ const App = () => {
         );
         setSVG(svgStr);
         setMask(output.data);
-        // const afterSVG = Date.now();
-        // console.log(`SVG took ${afterSVG - beforeSVG}ms`);
       } else {
-        // const beforeMask = Date.now();
         setMaskImg(rleToImage(output.data, output.dims[0], output.dims[1]));
-        // const afterMask = Date.now();
-        // console.log(`Mask took ${afterMask - beforeMask}ms`);
       }
       setClick(null);
       setIsLoading(false);
       setIsModelLoaded((prev) => {
         return { ...prev, boxModel: true };
       });
-      // console.log("boxModel is loaded");
     } catch (e) {
       // console.log(e);
     }
@@ -282,7 +269,6 @@ const App = () => {
     if (image !== null) {
       setIsErased(true);
       setIsErasing(true);
-      // setIsLoading(true);
       setEraserText({ isErase: true, isEmbedding: false });
       const { height, width, uploadScale } = handleImageScale(image);
       setParmsandQueryEraseModel({
@@ -336,14 +322,6 @@ const App = () => {
     data: File | URL,
     options?: { shouldNotFetchAllModel?: boolean; shouldDownload?: boolean }
   ) => {
-    if (data instanceof File) {
-      console.log("GOT FILE " + data.name);
-    } else if (data instanceof URL) {
-      console.log("GOT URL " + data.pathname);
-    } else {
-      console.log("GOT STRING " + data);
-    }
-
     try {
       const shouldNotFetchAllModel = options?.shouldNotFetchAllModel;
       const shouldDownload = options?.shouldDownload;
@@ -402,7 +380,6 @@ const App = () => {
     setIsErasing(false);
     setShowLoadingModal(false);
     setEraserText({ isErase: false, isEmbedding: false });
-    // window.scrollTo(0, 0);
   };
 
   const handleAllModelResults = ({
@@ -419,7 +396,6 @@ const App = () => {
     }[];
     image_height: number;
   }) => {
-    // console.log("handleAllModelResults");
     const allMaskSVG = allJSON.map(
       (el: {
         encodedMask: string;
